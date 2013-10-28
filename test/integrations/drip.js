@@ -15,10 +15,10 @@ before(function (done) {
   this.timeout(10000);
   this.spy = sinon.spy();
   analytics.ready(this.spy);
-  analytics.initialize({ Drip: settings });
-  this.integration = analytics._integrations.Drip;
+  analytics.initialize({ 'Drip': settings });
+  this.integration = analytics._integrations['Drip'];
   this.options = this.integration.options;
-  when(function () { return window.htk; }, done);
+  when(function () { return window.dc; }, done);
 });
 
 describe('#name', function () {
