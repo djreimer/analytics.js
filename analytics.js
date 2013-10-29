@@ -2742,6 +2742,8 @@ function debug(name) {
   if (!debug.enabled(name)) return function(){};
 
   return function(fmt){
+    fmt = coerce(fmt);
+
     var curr = new Date;
     var ms = curr - (debug[name] || curr);
     debug[name] = curr;
@@ -2844,9 +2846,20 @@ debug.enabled = function(name) {
   return false;
 };
 
+/**
+ * Coerce `val`.
+ */
+
+function coerce(val) {
+  if (val instanceof Error) return val.stack || val.message;
+  return val;
+}
+
 // persist
 
-if (window.localStorage) debug.enable(localStorage.debug);
+try {
+  if (window.localStorage) debug.enable(localStorage.debug);
+} catch(e){}
 
 });
 require.register("analytics/lib/index.js", function(exports, require, module){
@@ -2929,7 +2942,7 @@ module.exports = exports = Analytics;
  */
 
 exports.VERSION =
-Analytics.prototype.VERSION = '0.18.0';
+Analytics.prototype.VERSION = '0.18.2';
 
 
 /**
@@ -3625,6 +3638,7 @@ var integrations = [
   'comscore',
   'crazy-egg',
   'customerio',
+  'evergage',
   'errorception',
   'foxmetrics',
   'gauges',
@@ -5051,6 +5065,129 @@ Customerio.prototype.track = function (event, properties, options) {
 
 function convertDate (date) {
   return Math.floor(date.getTime() / 1000);
+}
+});
+require.register("analytics/lib/integrations/evergage.js", function(exports, require, module){
+
+var alias = require('alias');
+var each = require('each');
+var integration = require('../integration');
+var load = require('load-script');
+
+
+/**
+ * Expose `Evergage` integration.
+ */
+
+var Evergage = module.exports = integration('Evergage');
+
+
+/**
+ * Default options.
+ */
+
+Evergage.prototype.defaults = {
+  // your Evergage account name as seen in accountName.evergage.com (required)
+  account: null,
+  // your Evergage dataset ID, not dataset label (required)
+  dataset: null
+};
+
+
+/**
+ * Initialize.
+ *
+ * @param {Object} options
+ * @param {Function} ready
+ */
+
+Evergage.prototype.initialize = function (options, ready) {
+  var account = options.account;
+  var dataset = options.dataset;
+
+  window._aaq = window._aaq || [];
+  push('setEvergageAccount', account);
+  push('setDataset', dataset);
+  push('setUseSiteConfig', true);
+  ready();
+
+  load('//cdn.evergage.com/beacon/' + account + '/' + dataset + '/scripts/evergage.min.js');
+};
+
+
+/**
+ * Identify.
+ *
+ * @param {String} id (optional)
+ * @param {Object} traits (optional)
+ * @param {Object} options (optional)
+ */
+
+Evergage.prototype.identify = function (id, traits, options) {
+  if (!id) return;
+  push('setUser', id);
+
+  alias(traits, {
+    name: 'userName',
+    email: 'userEmail'
+  });
+
+  each(traits, function (key, value) {
+    push('setUserField', key, value, 'page');
+  });
+};
+
+
+/**
+ * Group.
+ *
+ * @param {String} id
+ * @param {Object} properties (optional)
+ * @param {Object} options (optional)
+ */
+
+Evergage.prototype.group = function (id, properties, options) {
+  if (!id) return;
+  push('setCompany', id);
+  each(properties, function(key, value) {
+    push('setAccountField', key, value, 'page');
+  });
+};
+
+
+/**
+ * Track.
+ *
+ * @param {String} event
+ * @param {Object} properties (optional)
+ * @param {Object} options (optional)
+ */
+
+Evergage.prototype.track = function (event, properties, options) {
+  push('trackAction', event, properties);
+};
+
+
+/**
+ * Pageview.
+ *
+ * @param {String} url (optional)
+ */
+
+Evergage.prototype.pageview = function (url) {
+  window.Evergage.init(true);
+};
+
+
+/**
+ * Helper to push onto the Evergage queue.
+ *
+ * @param {Mixed} args...
+ */
+
+function push (args) {
+  args = [].slice.call(arguments);
+  window._aaq.push(args);
 }
 });
 require.register("analytics/lib/integrations/errorception.js", function(exports, require, module){

@@ -2,7 +2,7 @@
   "name": "analytics",
   "repo": "segmentio/analytics.js",
   "description": "The hassle-free way to integrate analytics into any web application.",
-  "version": "0.18.0",
+  "version": "0.18.2",
   "keywords": [
     "analytics",
     "analytics.js",
@@ -23,6 +23,7 @@
     "customer.io",
     "drip",
     "errorception",
+    "evergage",
     "foxmetrics",
     "google analytics",
     "gauges",
@@ -98,7 +99,7 @@
     "timoxley/next-tick": "0.0.2",
     "yields/prevent": "0.0.2",
     "yields/slug": "1.1.0",
-    "visionmedia/debug": "0.7.2"
+    "visionmedia/debug": "cfd9c65"
   },
   "development": {
     "component/jquery": "*",
@@ -132,6 +133,7 @@
     "lib/integrations/crazy-egg.js",
     "lib/integrations/customerio.js",
     "lib/integrations/drip.js",
+    "lib/integrations/evergage.js",
     "lib/integrations/errorception.js",
     "lib/integrations/foxmetrics.js",
     "lib/integrations/gauges.js",
