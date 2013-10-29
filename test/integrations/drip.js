@@ -36,6 +36,7 @@ describe('#key', function () {
 describe('#defaults', function () {
   it('account', function () {
     assert(this.integration.defaults.account === '');
+    assert(this.integration.defaults.debug === false);
   });
 });
 
@@ -46,6 +47,28 @@ describe('#initialize', function () {
 
   it('should store options', function () {
     assert(this.options.account == settings.account);
+  });
+});
+
+
+describe('#track', function () {
+  beforeEach(function () {
+    this.context = { 'Drip': { 'goal': 999 } };
+    this.stub = sinon.stub(window._dcq, 'push');
+  });
+
+  afterEach(function () {
+    this.stub.restore();
+  });
+
+  it('should not track unless a goal id is provided', function () {
+    analytics.track('event', { revenue: 9.99 });
+    assert(this.stub.neverCalledWith(sinon.match.any));
+  });
+
+  it('should alias revenue to "value"', function () {
+    analytics.track('event', { revenue: 9.99 }, this.context);
+    assert(this.stub.calledWith(['trackConversion', { 'id': 999, 'value': 9.99 }]));
   });
 });
 
